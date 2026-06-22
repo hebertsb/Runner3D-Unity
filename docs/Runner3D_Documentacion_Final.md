@@ -18,12 +18,16 @@
    - 3.1. [Objetivo General](#31-objetivo-general)
    - 3.2. [Objetivos Específicos](#32-objetivos-específicos)
 4. [Desarrollo y Propuesta de Solución](#4-desarrollo-y-propuesta-de-solución)
-   - 4.1. [Stack Tecnológico](#41-stack-tecnológico)
-   - 4.2. [Arquitectura de Scripts C#](#42-arquitectura-de-scripts-c)
-   - 4.3. [Implementación del Sistema de Físicas](#43-implementación-del-sistema-de-físicas)
-   - 4.4. [Sistema de Object Pooling](#44-sistema-de-object-pooling)
-   - 4.5. [Pipeline de Renderizado y Efectos Visuales](#45-pipeline-de-renderizado-y-efectos-visuales)
-   - 4.6. [División de Trabajo y Plan de Desarrollo](#46-división-de-trabajo-y-plan-de-desarrollo)
+   - 4.1. [Herramientas y Tecnologías Utilizadas](#41-herramientas-y-tecnologías-utilizadas)
+   - 4.2. [Cómo se Organizó el Código](#42-cómo-se-organizó-el-código)
+   - 4.3. [El Sistema de Físicas del Personaje](#43-el-sistema-de-físicas-del-personaje)
+   - 4.4. [El Mundo Infinito: Reciclaje de Objetos](#44-el-mundo-infinito-reciclaje-de-objetos)
+   - 4.5. [Ilusión de Movimiento: El Truco del Mundo que se Mueve](#45-ilusión-de-movimiento-el-truco-del-mundo-que-se-mueve)
+   - 4.6. [Aspecto Visual: Universal Render Pipeline](#46-aspecto-visual-universal-render-pipeline)
+   - 4.7. [Desafíos Técnicos Encontrados y Cómo se Resolvieron](#47-desafíos-técnicos-encontrados-y-cómo-se-resolvieron)
+   - 4.8. [Organización de la Escena y Estructura del Proyecto](#48-organización-de-la-escena-y-estructura-del-proyecto)
+   - 4.9. [Control de Versiones con Git y GitHub](#49-control-de-versiones-con-git-y-github)
+   - 4.10. [División de Trabajo y Plan de Desarrollo](#410-división-de-trabajo-y-plan-de-desarrollo)
 5. [Marco Teórico y Metodológico](#5-marco-teórico-y-metodológico)
    - 5.1. [Fundamentos de Motores de Videojuegos](#51-fundamentos-de-motores-de-videojuegos)
    - 5.2. [Programación Orientada a Componentes](#52-programación-orientada-a-componentes)
@@ -53,7 +57,7 @@ El género *endless runner* —corredores infinitos— posee una historia docume
 
 Desde la perspectiva técnica, el desafío central de este género reside en la generación procedimental continua del escenario: el mundo debe crecer indefinidamente sin que el consumo de memoria escale proporcionalmente ni se produzcan interrupciones perceptibles en la tasa de fotogramas (*framerate*). Esto llevó a la adopción generalizada del patrón de diseño *Object Pooling*, que evita las costosas operaciones de asignación y liberación dinámica de memoria en tiempo de ejecución (Nystrom, 2014).
 
-El presente proyecto propone abordar estos desafíos técnicos en un entorno universitario de tres días, utilizando Unity 2022.3 LTS con Universal Render Pipeline (URP), C# como lenguaje de scripting, y un equipo de cinco personas con roles especializados.
+El presente proyecto propone abordar estos desafíos técnicos en un entorno universitario de tres días, utilizando Unity 6.5 (6000.5.0f1) con Universal Render Pipeline (URP), C# como lenguaje de scripting, y un equipo de cinco personas con roles especializados.
 
 ---
 
@@ -81,7 +85,7 @@ El desarrollo de un videojuego de tipo *runner* tridimensional en tiempo real pr
 
 ### 3.1 Objetivo General
 
-Diseñar e implementar un videojuego *runner* tridimensional en Unity 2022.3 LTS utilizando C# y Universal Render Pipeline, que integre un sistema de generación procedimental basado en *Object Pooling*, físicas de salto optimizadas y efectos visuales de post-procesado, dentro de un ciclo de desarrollo de tres días con equipo multidisciplinario de cinco personas.
+Diseñar e implementar un videojuego *runner* tridimensional en Unity 6.5 utilizando C# y Universal Render Pipeline, que integre un sistema de generación procedimental basado en *Object Pooling*, físicas de salto optimizadas y efectos visuales de post-procesado, dentro de un ciclo de desarrollo de tres días con equipo multidisciplinario de cinco personas.
 
 ### 3.2 Objetivos Específicos
 
@@ -101,187 +105,253 @@ Diseñar e implementar un videojuego *runner* tridimensional en Unity 2022.3 LTS
 
 ## 4. Desarrollo y Propuesta de Solución
 
-### 4.1 Stack Tecnológico
+### 4.1 Herramientas y Tecnologías Utilizadas
 
-El proyecto adopta el siguiente conjunto de tecnologías, seleccionadas por su madurez, documentación y compatibilidad entre sí:
+Para llevar adelante este proyecto se eligió Unity 6.5 como motor de desarrollo, principalmente porque ofrece todo lo necesario para un juego 3D de calidad sin requerir configuraciones complejas desde cero. Unity es ampliamente utilizado tanto en la industria como en el ámbito académico, y su versión 6 incorpora mejoras importantes en rendimiento y en el sistema de renderizado visual.
 
-| Componente | Tecnología | Justificación |
+El lenguaje de programación utilizado es C#, que es el lenguaje oficial de scripting en Unity. C# permite escribir código claro y organizado, con un sistema de tipos estricto que ayuda a detectar errores antes de ejecutar el juego. Para el apartado visual se utilizó el Universal Render Pipeline (URP), que es el pipeline de renderizado moderno de Unity. Su principal ventaja para este proyecto es que incluye efectos visuales de postprocesado —como destellos de luz, desenfoque de movimiento y corrección de color— listos para usar sin necesidad de programar shaders desde cero.
+
+Una decisión importante durante el desarrollo fue el sistema de entrada de teclado. Unity 6 utiliza por defecto el New Input System, que es más moderno y compatible con múltiples dispositivos. Sin embargo, esto generó una incompatibilidad con código de versiones anteriores de Unity que usaba la clase `Input` clásica. La solución aplicada fue migrar completamente al nuevo sistema, usando `Keyboard.current` para detectar las pulsaciones del jugador. Este cambio, aunque requirió ajustar el código, resultó en un sistema de entrada más robusto y preparado para el futuro.
+
+| Componente | Tecnología elegida | Por qué se eligió |
 |---|---|---|
-| Motor de juego | Unity 2022.3 LTS | Versión con soporte extendido, estabilidad probada en producción |
-| Lenguaje de programación | C# (.NET Standard 2.1) | Tipado estático, integración nativa con Unity, rendimiento de compilación JIT/IL2CPP |
-| Pipeline de renderizado | Universal Render Pipeline (URP) | Balance óptimo entre calidad visual y rendimiento en hardware de gama media |
-| Motor de físicas | NVIDIA PhysX (integrado Unity) | Resolución robusta de colisiones 3D, soporte completo de `Rigidbody` |
-| Sistema de entrada | Unity Input System (clásico) | Rapidez de implementación con `Input.GetButtonDown` para prototipo en tiempo reducido |
-| Animaciones | Unity Animator (Mecanim) | Máquina de estados visual integrada, soporte para blending de animaciones |
-| Cámara | Cinemachine 2.x | Movimiento suave con amortiguación, efectos de ruido y sacudida programables |
-| Entorno de desarrollo | Visual Studio 2022 / VS Code | IntelliSense completo para APIs de Unity |
+| Motor de juego | Unity 6.5 (6000.5.0f1) | Motor estándar de la industria, documentación abundante, gratuito para proyectos académicos |
+| Lenguaje de programación | C# (.NET) | Lenguaje oficial de Unity, tipado estático, fácil de leer y mantener |
+| Pipeline de renderizado | Universal Render Pipeline (URP) | Efectos visuales modernos sin necesidad de programar shaders |
+| Motor de físicas | NVIDIA PhysX (integrado en Unity) | Resolución de colisiones 3D incluida, no requiere implementación manual |
+| Sistema de entrada | New Input System (Unity 6) | Nativo en Unity 6, compatible con teclado, gamepad y pantalla táctil |
+| Animaciones | Unity Animator (Mecanim) | Editor visual de estados de animación, integrado en el motor |
+| Cámara | Cinemachine | Seguimiento suave del personaje y efectos de vibración programables |
+| Editor de código | Visual Studio Code | Autocompletado inteligente para las APIs de Unity |
+| Control de versiones | Git + GitHub | Trabajo colaborativo entre los cinco integrantes del equipo |
 
-**Tabla 1.** *Stack tecnológico del proyecto Runner 3D.*
+**Tabla 1.** *Herramientas y tecnologías del proyecto Runner 3D.*
 
-### 4.2 Arquitectura de Scripts C#
+### 4.2 Cómo se Organizó el Código
 
-El sistema de scripts sigue el principio de **responsabilidad única** (*Single Responsibility Principle*), donde cada clase gestiona un dominio funcional exclusivo. Las dependencias entre módulos fluyen unidireccionalmente hacia `GameManager`, que actúa como orquestador central.
+Uno de los primeros desafíos en cualquier proyecto de videojuego en equipo es decidir cómo dividir el código para que varias personas puedan trabajar al mismo tiempo sin pisarse entre sí. La solución adoptada fue asignar a cada script una sola responsabilidad clara y bien definida. De esta manera, la persona que trabaja en las físicas del personaje no necesita tocar el código del sistema de puntuación, y quien trabaja en la interfaz no interfiere con el código de los obstáculos.
 
-```
-Assets/
-└── Scripts/
-    ├── DinoController.cs   → Entrada de jugador, salto físico, deslizamiento,
-    │                         detección de suelo y triggers de animación.
-    ├── LevelScroller.cs    → Desplaza obstáculos y suelo hacia atrás para
-    │                         simular velocidad; escala progresiva de dificultad.
-    ├── ObjectPooler.cs     → Cola de GameObjects reciclables por etiqueta;
-    │                         elimina Instantiate/Destroy en tiempo de ejecución.
-    ├── GameManager.cs      → Puntuación, récord, máquina de estados del juego
-    │                         (Menú → Jugando → GameOver) y gestión de audio.
-    ├── UIManager.cs        → Pantallas de UI, contador de puntos en tiempo real
-    │                         y transiciones de desvanecimiento (Fade).
-    └── CinemachineShake.cs → Dispara ruido de cámara (Cinemachine Noise)
-                              en colisiones críticas para retroalimentación háptica visual.
-```
-
-**Figura 1.** *Estructura de módulos y responsabilidades del proyecto.*
-
-La comunicación entre módulos se realiza mediante el patrón **Singleton** en `GameManager` y `ObjectPooler`, accesibles globalmente mediante propiedad estática `Instance`. `DinoController` publica eventos mediante `UnityEvent` o métodos directos a `GameManager` para notificar colisiones.
-
-### 4.3 Implementación del Sistema de Físicas
-
-#### 4.3.1 Problema de la Curva de Salto Predeterminada
-
-Unity aplica gravedad uniforme sobre el `Rigidbody` durante toda la parábola de salto. Esto produce una curva simétrica donde el tiempo de ascenso es igual al tiempo de descenso, resultado percibido como "flotante" por el jugador (Schell, 2020). La solución consiste en aplicar una fuerza gravitacional adicional únicamente durante la fase descendente, acortando el tiempo de caída sin alterar la altura máxima del salto.
-
-La fórmula aplicada en `FixedUpdate` es:
+El proyecto se estructura en seis scripts principales, cada uno con una función específica:
 
 ```
-F_extra = g × (fallMultiplier - 1) × Δt     [cuando vy < 0]
+Assets/Scripts/
+├── DinoController.cs   → Todo lo relacionado con el personaje: salto,
+│                         detección de suelo, agacharse y colisiones.
+├── LevelScroller.cs    → Mueve los obstáculos hacia el jugador para
+│                         crear la ilusión de que el personaje avanza.
+├── ObjectPooler.cs     → Administra un grupo de obstáculos reutilizables
+│                         para evitar pausas por memoria.
+├── GameManager.cs      → Controla el estado del juego (menú, jugando,
+│                         game over), la puntuación y el récord.
+├── UIManager.cs        → Maneja las pantallas visibles: marcador,
+│                         pantalla de inicio y pantalla de fin de juego.
+└── CinemachineShake.cs → Hace temblar la cámara cuando el personaje
+                          choca, dando retroalimentación visual al jugador.
 ```
 
-Donde `g` es la gravedad del proyecto (`Physics.gravity.y`), `fallMultiplier` es un coeficiente configurable (valor recomendado: 2.5), y `Δt` es el tiempo fijo de física (`Time.fixedDeltaTime`).
+**Figura 1.** *Organización de scripts y su función en el proyecto.*
+
+Para que estos scripts puedan comunicarse entre sí sin crear dependencias complicadas, los sistemas centrales (`GameManager` y `ObjectPooler`) se implementan como instancias únicas accesibles desde cualquier parte del código. Cuando el personaje choca con un obstáculo, `DinoController` le avisa a `GameManager` con una sola línea de código, y el GameManager se encarga del resto.
+
+### 4.3 El Sistema de Físicas del Personaje
+
+#### 4.3.1 El Problema del Salto Flotante
+
+Cuando se usa la física predeterminada de Unity para hacer saltar un personaje, el resultado suele sentirse poco natural. El personaje sube y baja a la misma velocidad, lo que produce una sensación de que está flotando en el aire. Este problema es muy conocido en el desarrollo de videojuegos y afecta negativamente la experiencia del jugador, que pierde sensación de control (Schell, 2020).
+
+La solución consiste en aplicar una fuerza de gravedad extra únicamente durante la caída, sin afectar la subida. De esta manera el personaje sube con normalidad pero cae más rápido, produciendo un salto que se siente más firme y responsivo. El coeficiente que controla qué tan intensa es esta caída extra se llama `multiplicadorCaida` y está configurado en 2.5, lo que significa que el personaje cae 2.5 veces más fuerte de lo que sube. Este valor fue calibrado durante las pruebas del prototipo para encontrar el punto donde el salto se siente natural.
+
+```
+Gravedad extra en caída = gravedad × (multiplicadorCaida - 1) × tiempo
+```
+
+Esta operación se ejecuta en el método `FixedUpdate`, que corre a una frecuencia fija de 50 veces por segundo independientemente de la tasa de fotogramas, garantizando que la física sea consistente en cualquier computadora.
 
 #### 4.3.2 Detección de Suelo
 
-Se utiliza `Physics.CheckSphere` en lugar de `Raycast` simple para mayor robustez en terreno irregular. Un objeto auxiliar `groundCheck` (hijo del personaje, posicionado en los pies) sirve como origen de la esfera de detección con radio 0.2 unidades y máscara de capa exclusiva `groundLayer`.
+Para que el personaje solo pueda saltar cuando está pisando el suelo, se necesita un mecanismo que detecte si hay terreno debajo de sus pies. La solución implementada usa un objeto vacío llamado `DetectorSuelo`, colocado justo en los pies del personaje, que emite una pequeña esfera invisible hacia abajo. Si esa esfera toca un objeto marcado como suelo, el sistema sabe que el personaje puede saltar.
 
 ```csharp
-isGrounded = Physics.CheckSphere(groundCheck.position, 0.2f, groundLayer);
+estaEnSuelo = Physics.CheckSphere(puntoSuelo.position, 0.2f, capaSuelo);
 ```
 
-Este enfoque elimina falsos negativos al caminar sobre bordes de colisores que un rayo vertical singular podría omitir.
+Esta técnica es más confiable que usar un simple rayo porque cubre un área pequeña en lugar de un punto exacto, evitando situaciones donde el personaje está justo en el borde de una superficie y el rayo no lo detecta. El suelo del juego está marcado con una capa llamada `Ground` para que el detector no confunda el suelo con otros objetos de la escena como los obstáculos.
 
-#### 4.3.3 Sistema de Deslizamiento (Crouch)
+#### 4.3.3 El Sistema de Entrada del Jugador
 
-El deslizamiento reduce temporalmente la altura del `CapsuleCollider` para permitir pasar bajo obstáculos aéreos. Se activa con `LeftShift` o `S`, dispara el parámetro booleano `IsCrouching` en el Animator y puede escalar el collider a la mitad de su altura original mediante `collider.height` y ajuste del `center`.
-
-### 4.4 Sistema de Object Pooling
-
-#### 4.4.1 Fundamento Técnico
-
-El recolector de basura de .NET (GC) opera de forma no determinista: cuando la memoria del heap alcanza un umbral, pausa la ejecución para liberar objetos sin referencias. En un juego a 60 FPS, una pausa de 8 ms supera el presupuesto de fotograma completo (16.67 ms), produciendo caída visible de framerate (Nystrom, 2014).
-
-El patrón *Object Pool* resuelve esto pre-instanciando una cantidad fija de objetos al inicio del juego y recirculándolos mediante activación/desactivación (`SetActive`), evitando así la asignación dinámica durante el juego.
-
-#### 4.4.2 Implementación con `Queue<T>`
-
-`ObjectPooler` mantiene un diccionario de colas indexadas por etiqueta (`string`). Al solicitar un objeto:
-
-1. Se extrae el primero de la cola (`Dequeue`).
-2. Se posiciona y activa en escena.
-3. Se reinserta al final de la misma cola (`Enqueue`).
-
-Este ciclo garantiza distribución uniforme del uso entre todos los objetos del pool, evitando que un mismo objeto se reutilice antes de que haya completado su recorrido visible.
-
-```
-Ciclo de vida: [Inactivo] → Spawn → [Activo en escena] → Sale del borde → [Inactivo]
-```
-
-**Figura 2.** *Ciclo de vida de un objeto dentro del pool.*
-
-#### 4.4.3 Configuración de Tamaño del Pool
-
-El tamaño óptimo de cada pool se calcula como:
-
-```
-N = (distancia_visible / velocidad_spawn) + margen_seguridad
-```
-
-Para una pista visible de 50 unidades, velocidad inicial de 10 u/s y obstáculos cada 8 unidades, se requieren aproximadamente 7 obstáculos simultáneos. Un pool de 10 elementos ofrece margen suficiente.
-
-### 4.5 Pipeline de Renderizado y Efectos Visuales
-
-#### 4.5.1 Universal Render Pipeline (URP)
-
-URP reemplaza el pipeline de renderizado integrado (*Built-in*) de Unity con una arquitectura basada en *Scriptable Render Pipeline* que permite personalizar cada etapa del proceso gráfico. Sus ventajas para este proyecto incluyen (Unity Technologies, 2023):
-
-- **Post-procesado integrado**: Los efectos de *Bloom*, *Color Grading*, *Vignette* y *Motion Blur* se configuran mediante *Volume Profiles* sin código adicional.
-- **Iluminación en tiempo real**: Soporte para sombras dinámicas de hasta 4 luces adicionales sin costo prohibitivo de rendimiento en hardware de gama media.
-- **Compatibilidad móvil**: El mismo proyecto puede desplegarse en escritorio y dispositivos móviles ajustando parámetros de calidad sin cambios en el código.
-
-#### 4.5.2 Configuración de Post-Procesado
-
-El ambiente visual del juego evoca un desierto al atardecer mediante:
-
-| Efecto | Parámetro | Valor recomendado | Propósito |
-|---|---|---|---|
-| Bloom | Threshold / Intensity | 0.8 / 1.2 | Resplandor en bordes de obstáculos |
-| Color Grading | Temperature / Saturation | +15 / +10 | Tonalidad cálida de atardecer |
-| Vignette | Intensity | 0.35 | Enfoque visual hacia el centro |
-| Motion Blur | Shutter Angle | 180° | Sensación de velocidad elevada |
-
-**Tabla 2.** *Configuración de efectos de post-procesado URP.*
-
-#### 4.5.3 Sistema de Cámara con Cinemachine
-
-`CinemachineVirtualCamera` sigue al personaje con amortiguación configurable en los tres ejes. `CinemachineShake.cs` accede al `CinemachineBasicMultiChannelPerlin` del componente de ruido de la cámara virtual y modula su amplitud temporalmente al detectar una colisión crítica, produciendo sacudida de pantalla sin alterar la posición real de la cámara.
+Como se mencionó en la sección 4.1, Unity 6 utiliza el New Input System, que requiere una forma distinta de leer las teclas presionadas. En lugar de `Input.GetButtonDown("Jump")`, el código usa `Keyboard.current.spaceKey.wasPressedThisFrame`, que es más explícito y no depende de configuraciones de teclas predefinidas. El juego acepta tres teclas diferentes para saltar —Espacio, W y flecha arriba— para que sea cómodo para distintos jugadores:
 
 ```csharp
-IEnumerator ShakeRoutine(float duration, float magnitude)
+bool salto = Keyboard.current.spaceKey.wasPressedThisFrame ||
+             Keyboard.current.wKey.wasPressedThisFrame ||
+             Keyboard.current.upArrowKey.wasPressedThisFrame;
+```
+
+#### 4.3.4 Restricciones de Rotación
+
+Un detalle importante que no es evidente a primera vista: cuando el personaje choca con un obstáculo, la física de Unity podría hacer que se voltee o gire de maneras inesperadas, lo que rompería visualmente el juego. Para evitarlo, el componente `Rigidbody` del personaje tiene bloqueada la rotación en los tres ejes (X, Y y Z). Así, sin importar la fuerza del choque, el personaje siempre se mantiene erguido.
+
+### 4.4 El Mundo Infinito: Reciclaje de Objetos
+
+#### 4.4.1 Por Qué No se Puede Crear y Destruir Obstáculos Continuamente
+
+La primera idea para generar obstáculos de forma continua sería crear uno nuevo cada vez que se necesita y destruirlo cuando sale de la pantalla. Sin embargo, en un juego en tiempo real esto genera un problema serio: cada vez que C# crea o destruye un objeto en memoria, el sistema puede pausar brevemente la ejecución para reorganizar esa memoria. Estas pausas son muy cortas —a veces apenas unos milisegundos— pero en un juego donde todo ocurre a 60 fotogramas por segundo, incluso 8 ms de pausa es suficiente para que el jugador note una pequeña interrupción (Nystrom, 2014).
+
+#### 4.4.2 La Solución: Reutilizar en Lugar de Crear
+
+El patrón *Object Pooling* resuelve este problema de una forma elegante: en lugar de crear obstáculos durante el juego, se crean todos al inicio y se guardan desactivados. Cuando el juego necesita un obstáculo nuevo, simplemente toma uno de los guardados, lo posiciona donde corresponde y lo activa. Cuando ese obstáculo sale de la pantalla, en lugar de destruirlo se desactiva nuevamente y vuelve a la reserva para usarlo otra vez.
+
+```
+Estado del obstáculo:
+[Desactivado en reserva] → se necesita → [Activo en pantalla] → sale del borde → [Desactivado en reserva]
+```
+
+**Figura 2.** *Ciclo de vida de un obstáculo dentro del sistema de pool.*
+
+La implementación usa una cola (`Queue`) para cada tipo de objeto, lo que garantiza que los obstáculos se reutilicen en orden justo y ninguno sea usado dos veces seguidas antes de que haya completado su recorrido.
+
+#### 4.4.3 Cuántos Objetos Pre-crear
+
+Para determinar cuántos obstáculos pre-crear al inicio, se calcula cuántos pueden estar visibles en pantalla al mismo tiempo. Si la pista visible mide 50 unidades y los obstáculos aparecen cada 8 unidades aproximadamente, el máximo simultáneo es alrededor de 7. Pre-crear 10 objetos por tipo ofrece un margen cómodo sin desperdiciar memoria.
+
+### 4.5 Ilusión de Movimiento: El Truco del Mundo que se Mueve
+
+Una de las decisiones más importantes del diseño técnico es que el personaje no se mueve realmente hacia adelante. En cambio, los obstáculos y el suelo se desplazan hacia él. Esto resuelve un problema matemático: cuando un objeto en Unity se aleja demasiado del centro de coordenadas (el punto 0,0,0), los cálculos de física y posición pueden acumular pequeños errores numéricos que con el tiempo producen comportamientos extraños. Manteniendo el personaje cerca del origen y moviendo el escenario, el juego puede durar indefinidamente sin este problema.
+
+El script `LevelScroller.cs` implementa este movimiento con solo unas líneas:
+
+```csharp
+void Update()
 {
-    noise.m_AmplitudeGain = magnitude;
-    yield return new WaitForSeconds(duration);
-    noise.m_AmplitudeGain = 0f;
+    transform.Translate(Vector3.back * velocidad * Time.deltaTime);
 }
 ```
 
-### 4.6 División de Trabajo y Plan de Desarrollo
+Al multiplicar por `Time.deltaTime` —el tiempo transcurrido desde el último fotograma— el movimiento es consistente independientemente de la velocidad del procesador. Un computador lento y uno rápido verán los obstáculos moverse a la misma velocidad real, solo que el rápido lo renderizará con más fluidez.
 
-#### 4.6.1 Distribución de Roles
+La dificultad aumenta progresivamente incrementando esta velocidad con el tiempo, usando interpolación lineal (`Mathf.Lerp`) para que el aumento sea gradual y no abrupto.
 
-El equipo de cinco personas se distribuye con especialización funcional que minimiza dependencias entre ramas de trabajo simultáneo:
+### 4.6 Aspecto Visual: Universal Render Pipeline
 
-| Persona | Rol | Responsabilidad Principal | Entregables |
-|---|---|---|---|
-| P1 | Jugabilidad y Físicas | Lógica de entrada e interacción del personaje | `DinoController.cs`, calibración de salto y agachado, ajuste de gravedad |
-| P2 | Mundo Infinito | Reciclaje y desplazamiento del escenario | `ObjectPooler.cs`, `LevelScroller.cs`, spawn aleatorio de obstáculos |
-| P3 | GameManager e Integración | Control de estados, puntuación e interfaces | `GameManager.cs`, `UIManager.cs`, sistema de audio, pantallas de menú y GameOver |
-| P4 | Arte 3D e Iluminación | Diseño visual del entorno y efectos de partículas | Modelos 3D, materiales URP, VFX de polvo y colisión |
-| P5 | Animación y Cámara | Animaciones del personaje y comportamiento de cámara | Configuración del Animator, transiciones de animación, Cinemachine y Camera Shake |
+#### 4.6.1 Qué es URP y por qué se usó
 
-**Tabla 3.** *División de roles y responsabilidades del equipo.*
+El Universal Render Pipeline (URP) es el sistema que controla cómo Unity convierte la escena 3D en imágenes que se ven en pantalla. Comparado con el pipeline clásico de Unity, URP produce imágenes de mayor calidad visual con mejor rendimiento, y viene con un conjunto de efectos visuales de postprocesado ya integrados que se configuran visualmente sin necesidad de escribir código de shaders (Unity Technologies, 2023).
 
-#### 4.6.2 Plan de Desarrollo en Tres Días
+Para este proyecto, URP permite que el ambiente del desierto tenga un aspecto atractivo mediante efectos que se configuran directamente desde el editor:
 
-**Día 1 — Mecánicas Base (Prototipo Funcional)**
+| Efecto visual | Para qué sirve en el juego |
+|---|---|
+| Bloom (destellos) | Hace que los bordes de los obstáculos brillen ligeramente |
+| Color Grading | Da tonos cálidos anaranjados que evocan un atardecer en el desierto |
+| Vignette | Oscurece los bordes de la pantalla para enfocar la mirada al centro |
+| Motion Blur | A velocidades altas, crea un ligero desenfoque que da sensación de rapidez |
 
-- Escena base con plano de colisión y personaje con `Rigidbody`.
-- `DinoController.cs` con salto, gravedad aumentada y detección de suelo.
-- Obstáculos básicos (cubos) moviéndose hacia el jugador sin pooling.
-- Detección de colisión con Game Over inmediato.
-- *Criterio de aceptación*: El personaje salta, cae con física pesada y el juego termina al colisionar.
+**Tabla 2.** *Efectos visuales y su propósito en la experiencia del jugador.*
 
-**Día 2 — Reciclador de Mundo y Animación**
+#### 4.6.2 La Cámara con Cinemachine
 
-- `ObjectPooler.cs` y `LevelScroller.cs` integrados; eliminación total de `Instantiate` en runtime.
-- Importación de modelos 3D del personaje y obstáculos; configuración del Animator (estados: Idle, Run, Jump, Crouch).
-- `GameManager.cs` con máquina de estados, puntuación incremental por tiempo y pantalla de Game Over.
-- *Criterio de aceptación*: El juego corre sin stutters observables a 60 FPS en hardware objetivo; animaciones reproducen correctamente según estado.
+En lugar de posicionar la cámara manualmente y programar su seguimiento, el proyecto usa Cinemachine, un sistema de cámara avanzado que viene incluido en Unity. Cinemachine sigue al personaje con un movimiento suavizado y amortiguado, eliminando los saltos bruscos. Además, cuando el personaje choca con un obstáculo, el script `CinemachineShake.cs` hace vibrar la cámara durante una fracción de segundo, dando al jugador una retroalimentación visual clara del impacto sin necesidad de sonido ni texto en pantalla.
 
-**Día 3 — Pulido Visual, Audio y Calibración**
+### 4.7 Desafíos Técnicos Encontrados y Cómo se Resolvieron
 
-- Configuración de URP Volume con Bloom, Color Grading y Motion Blur.
-- Sistema de partículas para polvo en los pies del personaje al correr.
-- Integración de Cinemachine con Camera Shake en colisiones.
-- Audio: música de fondo en bucle, efectos de salto, aterrizaje y Game Over.
-- Calibración de dificultad mediante curva de velocidad progresiva (`Mathf.Lerp`).
-- *Criterio de aceptación*: Sesión de juego completa reproducible de forma autónoma ante público de feria.
+Durante el proceso de configuración y desarrollo del proyecto se encontraron varios problemas técnicos que no estaban previstos inicialmente. Documentar estos desafíos y sus soluciones es valioso porque refleja la realidad del trabajo de desarrollo de software, donde no todo funciona a la primera.
+
+**Problema 1 — Permisos de escritura bloqueados por Windows.**
+Al crear el proyecto, Unity intentó escribir archivos de caché en la carpeta del proyecto, pero Windows bloqueó el acceso. Esto se debió a restricciones de seguridad del antivirus sobre carpetas de usuario. La solución fue ejecutar Unity Hub con privilegios de administrador, lo que le dio permiso de escribir en las carpetas necesarias.
+
+**Problema 2 — Incompatibilidad del sistema de entrada.**
+Al implementar el primer salto del personaje con el código clásico de Unity (`Input.GetButtonDown`), la consola mostró el error: *"You are trying to read Input using the UnityEngine.Input class, but you have switched active Input handling to Input System package"*. Esto ocurrió porque Unity 6 usa por defecto el New Input System, que es incompatible con la clase `Input` antigua. La solución fue reescribir el código de entrada usando `Keyboard.current`, que es la forma correcta en Unity 6.
+
+**Problema 3 — El personaje era invisible por escala cero.**
+Durante una sesión de prueba, el personaje no aparecía en pantalla aunque estaba correctamente configurado. Al revisar el Inspector de Unity se descubrió que los valores de escala en X y Z eran 0 (`Scale: X=0, Y=1, Z=0`), lo que colapsaba el modelo a un plano invisible. Corregir los valores a `Scale: X=1, Y=1, Z=1` solucionó el problema inmediatamente.
+
+**Problema 4 — La etiqueta "Obstaculo" no existía.**
+El código de detección de colisiones busca objetos con la etiqueta `Obstaculo` para identificar cuándo el personaje choca. Sin embargo, Unity no crea etiquetas automáticamente; deben registrarse manualmente en la configuración del proyecto. Al no existir, Unity lanzaba el error *"Tag: Obstaculo is not defined"* en cada colisión. La solución fue agregarla desde `Edit → Project Settings → Tags and Layers`.
+
+Estos problemas ilustran que el trabajo de desarrollo no es solo escribir código, sino también resolver incompatibilidades, configurar entornos y depurar comportamientos inesperados del motor y del sistema operativo.
+
+### 4.8 Organización de la Escena y Estructura del Proyecto
+
+La escena principal del juego (`GameScene`) sigue una jerarquía de objetos clara que facilita la navegación para todos los integrantes del equipo:
+
+```
+GameScene
+├── CamaraPrincipal     → Cámara con Cinemachine, posición fija detrás del personaje
+├── LuzDireccional      → Iluminación principal de la escena (simula el sol)
+├── Suelo               → Plano extendido con Layer "Ground", escala 5×1×50
+└── Dino                → Personaje controlable
+    └── DetectorSuelo   → Objeto vacío en los pies, detecta si está en el suelo
+```
+
+**Figura 3.** *Jerarquía de la escena principal.*
+
+Todos los objetos de la escena usan nombres en español para mantener consistencia con el idioma del equipo, mientras que los scripts y sus variables internas mantienen convenciones de nomenclatura estándar de C# en inglés. Esta separación entre lo que es configuración de escena (español) y código (inglés) es una práctica que reduce la confusión en equipos donde el lenguaje natural de trabajo no es el inglés.
+
+El proyecto se organiza además con carpetas temáticas dentro de `Assets/` que separan los diferentes tipos de archivos: scripts, materiales, modelos, sonidos, animaciones y prefabs. Esta separación facilita que cada integrante del equipo encuentre rápidamente los archivos de su área de trabajo sin necesidad de revisar todo el proyecto.
+
+### 4.9 Control de Versiones con Git y GitHub
+
+Para que los cinco integrantes del equipo puedan trabajar simultáneamente sin perder cambios ni sobrescribir el trabajo de otro, el proyecto se gestiona con Git y se aloja en un repositorio de GitHub. Git permite que cada persona trabaje en su propio script de forma independiente y luego combine los cambios de forma controlada.
+
+El repositorio se configuró con un archivo `.gitignore` específico para proyectos Unity, que excluye las carpetas `Library/` y `Temp/` que Unity genera automáticamente y pueden pesar varios gigabytes. Subir estas carpetas sería innecesario porque cualquier computadora con Unity las regenera sola al abrir el proyecto. Solo se sube el código fuente, las escenas, los materiales y la configuración del proyecto.
+
+El flujo de trabajo diario del equipo es:
+1. Descargar los cambios más recientes antes de empezar a trabajar (`git pull`).
+2. Modificar únicamente los archivos del área propia.
+3. Subir los cambios con un mensaje que describa qué se hizo (`git commit` + `git push`).
+
+El repositorio está disponible en: **github.com/hebertsb/Runner3D-Unity**
+
+### 4.10 División de Trabajo y Plan de Desarrollo
+
+#### 4.10.1 Distribución de Roles
+
+El equipo de cinco personas se organizó de manera que cada uno tuviera un área específica que no dependiera completamente de que otro terminara primero. Esto permitió avanzar en paralelo desde el primer día:
+
+| Persona | Área de trabajo | Qué hace concretamente |
+|---|---|---|
+| P1 | Jugabilidad y Físicas | Controla cómo se mueve y salta el personaje (`DinoController.cs`) |
+| P2 | Mundo Infinito | Hace que los obstáculos aparezcan y se reciclen (`ObjectPooler.cs`, `LevelScroller.cs`) |
+| P3 | Gestión del Juego | Controla los estados, la puntuación y las pantallas (`GameManager.cs`, `UIManager.cs`) |
+| P4 | Arte e Iluminación | Diseña el ambiente visual, modelos 3D y efectos de partículas |
+| P5 | Animación y Cámara | Anima al personaje y configura el comportamiento de la cámara |
+
+**Tabla 3.** *División de roles del equipo de desarrollo.*
+
+#### 4.10.2 Plan de Desarrollo en Tres Días
+
+El desarrollo se organiza en tres iteraciones de un día cada una, donde cada iteración produce algo jugable que se puede probar:
+
+**Día 1 — Prototipo funcional**
+
+El objetivo del primer día es tener algo que se pueda jugar, aunque sea visualmente básico. El personaje debe poder saltar sobre obstáculos que se mueven, y el juego debe terminar cuando hay una colisión. No importa si todo se ve con cubos grises; lo importante es que la mecánica central funcione correctamente.
+
+Lo que se construye el Día 1:
+- Escena con suelo y personaje (cápsula simple con física)
+- Script de salto con gravedad personalizada
+- Obstáculos básicos (cubos) que se mueven hacia el jugador
+- Detección de colisión que muestra "Game Over" en consola
+
+**Día 2 — Integración de sistemas y arte**
+
+Con la mecánica base funcionando, el segundo día se enfoca en hacer el juego más completo: el mundo infinito con reciclaje de obstáculos, las animaciones del personaje, y la interfaz de usuario básica.
+
+Lo que se construye el Día 2:
+- Sistema de Object Pooling en funcionamiento (sin pausas visibles)
+- Modelos 3D del personaje y obstáculos importados
+- Animaciones configuradas (correr, saltar, agacharse)
+- Pantallas de menú, juego y Game Over con puntuación visible
+
+**Día 3 — Pulido y presentación**
+
+El último día se dedica a hacer que el juego se vea y suene bien para la presentación. Se agregan los efectos visuales, el audio y se calibra la dificultad.
+
+Lo que se construye el Día 3:
+- Efectos de postprocesado URP (Bloom, Color Grading, Motion Blur)
+- Partículas de polvo en los pies del personaje al correr
+- Vibración de cámara al chocar (Cinemachine Shake)
+- Música de fondo y efectos de sonido
+- Ajuste fino de la curva de dificultad
 
 ---
 
@@ -376,7 +446,7 @@ La coordinación entre personas se establece mediante contrato de interfaces: ca
 
 **R2.** Explorar el paquete `Unity.Collections` (NativeArray, NativeList) para sistemas de alta frecuencia de actualización. Estos tipos de datos se alocan en memoria nativa (fuera del heap administrado de .NET), eliminando completamente la presión de GC en los caminos críticos de rendimiento.
 
-**R3.** Considerar la migración del sistema de entrada a *New Input System* de Unity para proyectos con soporte multi-plataforma. Aunque el sistema clásico (`Input.GetKeyDown`) es suficiente para prototipo, el nuevo sistema ofrece abstracción de dispositivos que facilita el soporte de mandos de juego y pantallas táctiles sin cambios de código.
+**R3.** El proyecto adoptó el *New Input System* de Unity 6 desde el inicio, lo que demostró ser la decisión correcta a largo plazo. Se recomienda mantener este sistema en futuras extensiones del proyecto, ya que permite agregar soporte para mandos de juego y pantallas táctiles sin modificar el código de lógica existente, simplemente configurando nuevos mapeos de entrada en el editor.
 
 **R4.** Incorporar un sistema de pruebas automatizadas para la lógica de `GameManager` utilizando el framework `Unity Test Framework` (modo Edit Mode). Validar automáticamente las transiciones de estado previene regresiones durante el pulido del Día 3 cuando múltiples sistemas se integran simultáneamente.
 
