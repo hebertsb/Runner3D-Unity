@@ -46,9 +46,9 @@ public class DinoController : MonoBehaviour
             rb.linearVelocity += Vector3.up * Physics.gravity.y * (multiplicadorCaida - 1) * Time.fixedDeltaTime;
     }
 
-    void OnCollisionEnter(Collision collision)
+    void OnTriggerEnter(Collider other)
     {
-        if (collision.gameObject.CompareTag("Obstaculo"))
+        if (other.CompareTag("Obstaculo"))
         {
             Debug.Log("GAME OVER");
             // GameManager.Instance.TriggerGameOver();
