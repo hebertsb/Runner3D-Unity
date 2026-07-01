@@ -18,6 +18,7 @@ public class DinoController : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         animator = GetComponent<Animator>();
+        LevelScroller.Instance.IniciarJuego(); // TEMPORAL
     }
 
     void Update()
