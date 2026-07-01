@@ -45,14 +45,15 @@ public class LevelScroller : MonoBehaviour
     {
         if (!enJuego) return;
 
-        // Mover todos los objetos con tag "Scrolleable" hacia el jugador
-        GameObject[] objetos = GameObject.FindGameObjectsWithTag("Scrolleable");
-        foreach (GameObject obj in objetos)
-        {
+        // Mover pista y decorados
+        foreach (GameObject obj in GameObject.FindGameObjectsWithTag("Scrolleable"))
             obj.transform.Translate(Vector3.back * VelocidadActual * Time.deltaTime);
 
-            // Reciclar obstáculos que pasaron al jugador
-            if (obj.transform.position.z < limiteRetorno && obj.CompareTag("Obstaculo"))
+        // Mover obstáculos y reciclar los que pasaron al jugador
+        foreach (GameObject obj in GameObject.FindGameObjectsWithTag("Obstaculo"))
+        {
+            obj.transform.Translate(Vector3.back * VelocidadActual * Time.deltaTime);
+            if (obj.transform.position.z < limiteRetorno)
                 ObjectPooler.Instance.RetornarAlPool(obj);
         }
 
