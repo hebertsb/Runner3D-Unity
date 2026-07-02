@@ -18,7 +18,7 @@ public class DinoController : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         animator = GetComponent<Animator>();
-        LevelScroller.Instance.IniciarJuego(); // TEMPORAL
+        // GameManager.Instance.IniciarJuego() se llama desde el boton Play del menu
     }
 
     void Update()
@@ -51,7 +51,7 @@ public class DinoController : MonoBehaviour
         if (other.CompareTag("Obstaculo"))
         {
             Debug.Log("GAME OVER");
-            // GameManager.Instance.TriggerGameOver();
+            GameManager.Instance.TriggerGameOver();
         }
     }
 }
