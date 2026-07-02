@@ -38,6 +38,40 @@ CameraShake        → vibración de cámara al morir
 
 ---
 
+## 2b. Mapa de Llamadas — Quién llama a quién
+
+```
+INPUT (teclado)
+ └─► DinoController.Update()
+       ├─► rb.linearVelocity = fuerzaSalto        → aplica físicas de salto
+       ├─► AudioManager.ReproducirSalto()         → suena SonidoSalto.mp3
+       ├─► capsule.height = alturaAgachado        → achica hitbox
+       └─► animator.SetBool("isCrouching", ...)  → activa animación
+
+COLISIÓN con obstáculo
+ └─► DinoController.OnTriggerEnter()
+       ├─► CameraShake.Instance.Shake()          → vibra cámara
+       ├─► animator.SetTrigger("Morir")          → animación de muerte
+       └─► GameManager.TriggerGameOver()
+             ├─► LevelScroller.DetenerJuego()    → para el movimiento
+             ├─► AudioManager.ReproducirGameOver() → para música, suena game over
+             └─► UIManager.MostrarGameOver()     → cambia panel
+
+CACTUS pasa al jugador (Z < -20)
+ └─► LevelScroller.Update()
+       ├─► GameManager.RegistrarEsquive()
+       │     ├─► Combo++
+       │     ├─► ObstaculosEsquivados++
+       │     └─► AudioManager.ReproducirEsquive() → suena SonidoEsquive.mp3
+       └─► ObjectPooler.RetornarAlPool(obj)      → cactus vuelve al pool
+
+CADA 5 SEGUNDOS
+ └─► LevelScroller.Update() → timerIncremento >= 5f
+       └─► VelocidadActual += 0.5f              → aumenta velocidad del juego
+```
+
+---
+
 ## 3. Máquina de Estados — `GameManager.cs`
 
 El juego tiene **3 estados**:
@@ -101,6 +135,27 @@ float velocidadInicial    = 8f    // velocidad al iniciar
 float incrementoVelocidad = 0.5f  // cuánto sube cada intervalo
 float velocidadMaxima     = 25f   // techo de velocidad
 float intervaloIncremento = 5f    // segundos entre cada aumento
+```
+
+### Función exacta que aumenta la velocidad
+```csharp
+// En LevelScroller.Update() — se ejecuta cada frame
+timerIncremento += Time.deltaTime;
+if (timerIncremento >= intervaloIncremento)   // cada 5 segundos
+{
+    timerIncremento = 0f;
+    VelocidadActual = Mathf.Min(VelocidadActual + incrementoVelocidad, velocidadMaxima);
+    // Mathf.Min garantiza que nunca supere 25
+}
+```
+
+### Función exacta que calcula el Nivel (en GameManager.Update)
+```csharp
+float vel = LevelScroller.Instance.VelocidadActual;
+NivelActual = Mathf.Max(1, Mathf.FloorToInt((vel - 6f) / 2f) + 1);
+// vel=8 → (8-6)/2 + 1 = 2  → Nivel 2
+// vel=12 → (12-6)/2 + 1 = 4 → Nivel 4
+// vel=20 → (20-6)/2 + 1 = 8 → Nivel 8
 ```
 
 ### Funcionamiento
@@ -353,6 +408,35 @@ Usa **múltiples AudioSources** en el mismo GameObject:
 | `sources[0]` | Música de fondo (loop) |
 | `sources[1]` | Sonido Game Over (no interrumpe) |
 
+### Archivos de audio asignados en Inspector
+| Campo Inspector | Archivo | Cuándo suena |
+|----------------|---------|--------------|
+| `Musica` | ES_Powerwalkin.mp3 | Al iniciar → loop continuo |
+| `Sonido Game Over` | EMOTIONAL DAMAGE 1.mp3 | Al morir |
+| `Sonido Salto` | SonidoSalto.mp3 | Cada vez que el jugador salta |
+| `Sonido Esquive` | SonidoEsquive.mp3 | Cada vez que un cactus pasa |
+
+### Dónde se captura/dispara cada sonido
+```
+SonidoSalto.mp3
+  Disparado en: DinoController.Update()
+  Condición: salto == true && estaEnSuelo == true
+  Función: AudioManager.Instance.ReproducirSalto()
+  Cómo: sources[0].PlayOneShot(sonidoSalto, 0.7f)
+
+SonidoEsquive.mp3
+  Disparado en: GameManager.RegistrarEsquive()
+  Condición: un cactus pasó Z < -20 (LevelScroller lo detecta)
+  Función: AudioManager.Instance.ReproducirEsquive()
+  Cómo: sources[0].PlayOneShot(sonidoEsquive, 0.5f)
+
+EMOTIONAL DAMAGE (GameOver)
+  Disparado en: GameManager.TriggerGameOver()
+  Condición: colisión con Obstaculo o ObstaculoAereo
+  Función: AudioManager.Instance.ReproducirGameOver()
+  Cómo: para sources[0] (música), luego sources[1].PlayOneShot(sonidoGameOver)
+```
+
 ### Métodos
 ```csharp
 ReproducirSalto()    // PlayOneShot sobre sources[0] — no interrumpe música
@@ -361,7 +445,8 @@ ReproducirGameOver() // para música, reproduce Game Over en sources[1]
 PararMusica()        // solo para sources[0]
 ```
 
-> `PlayOneShot()` permite reproducir un clip **encima** del clip actual sin interrumpirlo.
+> `PlayOneShot()` permite reproducir un clip **encima** del clip actual sin interrumpirlo.  
+> Diferencia con `Play()`: `Play()` corta lo que estaba sonando; `PlayOneShot()` mezcla ambos.
 
 ---
 
