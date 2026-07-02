@@ -45,19 +45,19 @@ public class LevelScroller : MonoBehaviour
     {
         if (!enJuego) return;
 
-        // Mover pista y decorados
         foreach (GameObject obj in GameObject.FindGameObjectsWithTag("Scrolleable"))
             obj.transform.Translate(Vector3.back * VelocidadActual * Time.deltaTime);
 
-        // Mover obstáculos y reciclar los que pasaron al jugador
         foreach (GameObject obj in GameObject.FindGameObjectsWithTag("Obstaculo"))
         {
             obj.transform.Translate(Vector3.back * VelocidadActual * Time.deltaTime);
             if (obj.transform.position.z < limiteRetorno)
+            {
+                GameManager.Instance?.RegistrarEsquive();
                 ObjectPooler.Instance.RetornarAlPool(obj);
+            }
         }
 
-        // Incrementar velocidad progresivamente
         timerIncremento += Time.deltaTime;
         if (timerIncremento >= intervaloIncremento)
         {

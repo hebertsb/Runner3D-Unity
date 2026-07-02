@@ -13,6 +13,7 @@ public class ObjectPooler : MonoBehaviour
 
     private Queue<GameObject> pool = new Queue<GameObject>();
     private float timerSpawn;
+    private float pausaTimer;
 
     void Awake()
     {
@@ -34,8 +35,16 @@ public class ObjectPooler : MonoBehaviour
         }
     }
 
+    public void PausarPorSegundos(float segundos)
+    {
+        pausaTimer = segundos;
+        timerSpawn = 0f;
+    }
+
     void Update()
     {
+        if (pausaTimer > 0) { pausaTimer -= Time.deltaTime; return; }
+
         timerSpawn += Time.deltaTime;
         if (timerSpawn >= intervaloSpawn)
         {
@@ -47,6 +56,7 @@ public class ObjectPooler : MonoBehaviour
     void SpawnObstaculo()
     {
         if (pool.Count == 0) return;
+        if (ObstaculoAereo.HayAveActiva) return; // no cactus mientras ave en vuelo
 
         GameObject obstaculo = pool.Dequeue();
         obstaculo.transform.position = new Vector3(0f, 0.5f, distanciaSpawn);

@@ -30,8 +30,19 @@ public class UIManager : MonoBehaviour
     void Update()
     {
         if (GameManager.Instance.EstadoActual == GameManager.Estado.Jugando && textoPuntaje != null)
-            textoPuntaje.text = "Puntos: " + Mathf.RoundToInt(GameManager.Instance.Puntos)
-                              + "  |  Vel: " + Mathf.RoundToInt(LevelScroller.Instance.VelocidadActual);
+        {
+            var gm = GameManager.Instance;
+            float multi = gm.ComboMultiplicador();
+            int puntos = Mathf.RoundToInt(gm.Puntos);
+            int record = gm.Record;
+            int nivel = gm.NivelActual;
+            int combo = gm.Combo;
+
+            string comboTexto = multi > 1f ? $"  <color=#FFD700>x{multi:0}</color>" : "";
+            string recordTexto = puntos > record ? "  <color=#39FF14>NUEVO RECORD!</color>" : $"  Mejor: {record}";
+
+            textoPuntaje.text = $"Puntos: {puntos}{comboTexto}\nNivel: {nivel}  |  Esquivados: {gm.ObstaculosEsquivados}{recordTexto}";
+        }
     }
 
     public void MostrarMenu()
@@ -56,12 +67,15 @@ public class UIManager : MonoBehaviour
 
         int puntos = Mathf.RoundToInt(GameManager.Instance.Puntos);
         int record = GameManager.Instance.Record;
+        bool esRecord = puntos >= record && puntos > 0;
 
         if (textoGameOver != null)
-            textoGameOver.text = "GAME OVER\nPuntos: " + puntos;
+            textoGameOver.text = $"GAME OVER\nPuntos: {puntos}\nEsquivados: {GameManager.Instance.ObstaculosEsquivados}";
 
         if (textoRecord != null)
-            textoRecord.text = (puntos >= record ? "NUEVO RECORD: " : "Record: ") + record;
+            textoRecord.text = esRecord
+                ? $"<color=#FFD700>★ NUEVO RECORD: {record} ★</color>"
+                : $"Record: {record}";
     }
 
     public void BotonJugar() => GameManager.Instance.IniciarJuego();
