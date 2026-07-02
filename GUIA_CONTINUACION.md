@@ -161,51 +161,191 @@ También descomentar línea 49:
 
 ### DOUGLAS PADILLA — Animación y Cámara
 
-**Qué hacer:**
+**ESTADO ACTUAL (lo que ya existe):**
+- Dino tiene componente `Animator` pero sin AnimatorController asignado
+- `DinoController.cs` ya llama `animator.SetBool("isCrouching", agachado)` — el parámetro DEBE llamarse exactamente `isCrouching`
+- `CamaraPrincipal` está en la escena en Position X=0 Y=3 Z=-8, Rotation X=15
 
-**Animator Controller:**
-1. Assets → Create → Animator Controller → nombre "DinoAnimator"
-2. Asignarlo al componente Animator del Dino
-3. Crear estados: Idle, Run, Jump, Crouch
-4. Parámetros a crear:
-   - `IsGrounded` (bool) → transición Run↔Jump
-   - `isCrouching` (bool) → YA está siendo seteado por DinoController
-   - `Jump` (trigger) → opcional para salto
+---
 
-**CinemachineShake.cs:**
-1. Instalar Cinemachine: Package Manager → Cinemachine
-2. Hierarchy → Cinemachine → Virtual Camera
-3. Crear script `Assets/Scripts/CinemachineShake.cs`
-4. Efecto: cuando Dino colisiona con obstáculo → cámara tiembla 0.3s
-5. Llamarlo desde DinoController en OnTriggerEnter:
+**PASO 1 — git pull**
+```bash
+git clone https://github.com/hebertsb/Runner3D-Unity.git   # si es primera vez
+# o si ya tienes el repo:
+git pull origin main
+```
+Abrir Unity Hub → Add → carpeta clonada → Unity 6 (6000.0.5f1)
+
+---
+
+**PASO 2 — Crear Animator Controller**
+
+En Project panel → carpeta `Assets/Animations/` (créala si no existe):
+- Click derecho → Create → Animator Controller → nombre: `DinoAnimator`
+
+Doble click en `DinoAnimator` para abrir la ventana Animator.
+
+**Crear parámetros** (panel izquierdo → tab Parameters → click +):
+- `isCrouching` → Bool
+- `IsGrounded` → Bool
+
+**Crear estados** (click derecho en grid → Create State → Empty):
+- `Idle` — estado por defecto (naranja)
+- `Run`
+- `Crouch`
+
+**Transiciones:**
+- `Idle` → `Run`: click derecho en Idle → Make Transition → Run. Condition: `IsGrounded = true`
+- `Run` → `Idle`: click derecho en Run → Make Transition → Idle. Condition: `IsGrounded = false`
+- `Run` → `Crouch`: Condition: `isCrouching = true`
+- `Crouch` → `Run`: Condition: `isCrouching = false`
+
+> Si no tienes clips de animación todavía, los estados quedan vacíos — está bien, el controlador igual funciona para cuando Luis agregue los clips.
+
+---
+
+**PASO 3 — Asignar AnimatorController al Dino**
+
+En Hierarchy → click `Dino` → Inspector → componente `Animator`:
+- Campo **Controller** → arrastra `DinoAnimator` desde Project panel
+
+---
+
+**PASO 4 — Instalar Cinemachine**
+
+Window → Package Manager → busca `Cinemachine` → Install (versión 3.x)
+
+---
+
+**PASO 5 — Crear Virtual Camera**
+
+Hierarchy → click derecho → Cinemachine → **Cinemachine Camera** → nombre: `VirtualCamera`
+
+Inspector de VirtualCamera:
+- **Follow**: arrastra `Dino` desde Hierarchy
+- **Look At**: arrastra `Dino` desde Hierarchy
+- En **Body** → selecciona `Orbital Follow` o `3rd Person Follow`
+  - Offset: X=0, Y=3, Z=-8 (mismo que la cámara actual)
+
+Esto convierte `CamaraPrincipal` en "brain" automáticamente.
+
+---
+
+**PASO 6 — Crear CinemachineShake.cs**
+
+En Project panel → `Assets/Scripts/` → click derecho → Create → MonoBehaviour Script → nombre: `CinemachineShake`
+
+Reemplazar contenido completo con:
+
 ```csharp
-CinemachineShake.Instance.ShakeCamera(3f, 0.3f);
+using UnityEngine;
+using Unity.Cinemachine;
+
+public class CinemachineShake : MonoBehaviour
+{
+    public static CinemachineShake Instance { get; private set; }
+
+    [SerializeField] private CinemachineCamera virtualCamera;
+    private CinemachineBasicMultiChannelPerlin noise;
+    private float timerShake;
+
+    void Awake()
+    {
+        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
+        Instance = this;
+    }
+
+    void Start()
+    {
+        noise = virtualCamera.GetComponent<CinemachineBasicMultiChannelPerlin>();
+    }
+
+    public void ShakeCamera(float intensidad, float duracion)
+    {
+        if (noise == null) return;
+        noise.AmplitudeGain = intensidad;
+        timerShake = duracion;
+    }
+
+    void Update()
+    {
+        if (timerShake > 0)
+        {
+            timerShake -= Time.deltaTime;
+            if (timerShake <= 0 && noise != null)
+                noise.AmplitudeGain = 0f;
+        }
+    }
+}
 ```
 
-**Cámara actual:**
-- `CamaraPrincipal` ya está en escena
-- Posición recomendada para endless runner: detrás y arriba del Dino
-- Si usas Cinemachine Virtual Camera, la CamaraPrincipal se convierte en "brain"
+---
+
+**PASO 7 — Configurar CinemachineShake en escena**
+
+Hierarchy → click derecho → Create Empty → nombre: `CinemachineShake`
+- Inspector → Add Component → `CinemachineShake`
+- Campo **Virtual Camera** → arrastra `VirtualCamera` desde Hierarchy
+
+En `VirtualCamera` → Add Component → `Cinemachine Basic Multi Channel Perlin`
+- Noise Profile: `6D Shake` (o cualquiera disponible)
+- Amplitude Gain: `0` (empieza en 0)
+
+---
+
+**PASO 8 — Conectar shake con DinoController**
+
+Abrir `Assets/Scripts/DinoController.cs` y modificar el método `OnTriggerEnter`:
+
+```csharp
+void OnTriggerEnter(Collider other)
+{
+    if (other.CompareTag("Obstaculo"))
+    {
+        Debug.Log("GAME OVER");
+        CinemachineShake.Instance?.ShakeCamera(3f, 0.3f);
+        GameManager.Instance.TriggerGameOver();
+    }
+}
+```
+
+---
+
+**PASO 9 — Probar**
+
+▶ Play → jugar → chocar con obstáculo → cámara debe temblar 0.3 segundos → aparece GAME OVER.
+
+---
+
+**PASO 10 — Commit y push**
+
+Ctrl+S en Unity primero, luego:
+
+```bash
+git add Assets/Animations/DinoAnimator.controller
+git add Assets/Animations/DinoAnimator.controller.meta
+git add Assets/Scripts/CinemachineShake.cs
+git add Assets/Scripts/CinemachineShake.cs.meta
+git add Assets/Scenes/GameScene.unity
+git commit -m "feat(douglas): agregar AnimatorController y CinemachineShake"
+git push origin main
+```
+
+**IMPORTANTE:** Después de que Douglas haga push → avisar a Luis para que haga `git pull` antes de tocar la escena.
 
 ---
 
 ## FLUJO DE INTEGRACIÓN RECOMENDADO
 
 ```
-Semana actual:
-1. Gabriel → GameManager básico (menú + game over)
-2. Douglas → Animator Controller básico (Idle + Run)
-3. Luis → reemplazar modelos principales (Dino + Suelo)
+COMPLETADO:
+✅ Hebert  → ObjectPooler, LevelScroller, GroundScroller, DinoController
+✅ Gabriel → GameManager, UIManager, Canvas (Menu/HUD/GameOver)
 
-Siguiente:
-4. Douglas → CinemachineShake
-5. Gabriel → puntaje + UIManager completo
-6. Luis → iluminación URP + skybox + VFX partículas
-
-Integración final:
-7. Todos hacen git pull → prueba conjunta
-8. Fix de bugs de integración
-9. Build final para Feria Expociencia
+ORDEN PARA EVITAR CONFLICTOS EN GameScene.unity:
+1. Douglas → AnimatorController + CinemachineShake → push
+2. Luis    → git pull → modelos 3D + materiales + iluminación → push
+3. Todos   → git pull → prueba conjunta → fix bugs → build final
 ```
 
 ---
