@@ -1015,6 +1015,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AudioManager
   musica: {fileID: 8300000, guid: e3a5bb2145262444c84eb8d452b8e303, type: 3}
   sonidoGameOver: {fileID: 8300000, guid: 85eaa4f89a489594fa5875f3f6f7f3d6, type: 3}
+  sonidoSalto: {fileID: 8300000, guid: 0a4120ed011da9d47848d185bd0d1770, type: 3}
+  sonidoEsquive: {fileID: 8300000, guid: 7def56fb95473834b9ad4929403d69c2, type: 3}
 --- !u!4 &937640510
 Transform:
   m_ObjectHideFlags: 0
