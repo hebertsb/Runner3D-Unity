@@ -1,52 +1,45 @@
-# Runner 3D — Unity 6
+# Runner 3D
 
-Videojuego de tipo *endless runner* 3D desarrollado en Unity 6 con Universal Render Pipeline (URP) y C#.
+Juego endless runner 3D desarrollado en Unity 6 con Universal Render Pipeline (URP).
 
----
+Proyecto presentado en Feria Expociencia — UAGRM, materia Programación Gráfica ELC102.
 
-## ¿De qué trata el juego?
+## Descripción
 
-El jugador controla a **Dino**, un personaje que corre automáticamente por un desierto 3D infinito. El objetivo es sobrevivir el mayor tiempo posible esquivando obstáculos que aparecen en el camino. La velocidad del juego aumenta progresivamente, haciendo cada vez más difícil reaccionar a tiempo.
+El jugador controla un velociraptor que corre automáticamente y debe esquivar tres tipos de obstáculos:
 
-Inspirado en el clásico *T-Rex Runner* de Google Chrome, pero llevado a un entorno 3D con efectos visuales modernos.
+- **Cactus** — obstáculo fijo, requiere saltar
+- **Pteranodon** — obstáculo aéreo, requiere agacharse
+- **Cubo móvil** — obstáculo que zigzaguea lateralmente, requiere saltar o esquivar por timing
 
----
+El juego aumenta de velocidad con el tiempo, incrementando la dificultad progresivamente.
 
 ## Controles
 
-| Tecla | Acción |
-|---|---|
-| `Espacio` | Saltar |
-| `W` o `↑` | Saltar |
-| `S` o `LeftShift` | Agacharse (deslizarse) |
+| Acción | Teclas |
+|--------|--------|
+| Saltar | `Espacio` / `W` / `↑` |
+| Agacharse | `S` / `↓` / `Ctrl izq` |
 
----
+## Características
 
-## Cómo funciona — Estructura del proyecto
+- Sistema de puntuación con multiplicador de combo (x1 / x2 / x3 / x4)
+- Niveles basados en velocidad actual
+- Registro de mejor puntaje (PlayerPrefs)
+- Object Pooling para optimización de rendimiento
+- Coyote Time en el salto (150ms de gracia)
+- Tres tipos de obstáculos con comportamiento distinto
 
-```
-Assets/
-├── Scripts/
-│   ├── DinoController.cs   → Control del jugador: salto, gravedad, colisión
-│   ├── LevelScroller.cs    → Mueve obstáculos hacia el jugador (ilusión de velocidad)
-│   ├── ObjectPooler.cs     → Recicla obstáculos sin crear/destruir en runtime
-│   ├── GameManager.cs      → Estados del juego: Menú, Jugando, GameOver + puntuación
-│   ├── UIManager.cs        → Pantallas e interfaz de usuario
-│   └── CinemachineShake.cs → Sacudida de cámara al morir
-├── Scenes/
-│   └── GameScene.unity     → Escena principal del juego
-├── Materials/
-│   └── MaterialDino.mat    → Color del personaje
-├── Prefabs/                → Obstáculos y segmentos de suelo prefabricados
-├── Models/                 → Modelos 3D del personaje y entorno
-├── Audio/                  → Música de fondo y efectos de sonido
-└── Animations/             → Animaciones: Idle, Run, Jump, Crouch
-```
+## Tecnologías
 
----
+- Unity 6 (6000.0.5f1)
+- Universal Render Pipeline (URP)
+- New Input System
+- C#
 
-## Sistemas implementados
+## Autor
 
+<<<<<<< HEAD
 ### Física del salto
 El personaje usa un `Rigidbody` con gravedad aumentada en la caída (`fallMultiplier = 2.5`). Esto produce un salto más responsivo y pesado que la física predeterminada, dando mayor sensación de control.
 
@@ -105,3 +98,8 @@ Proyecto universitario — Programación Gráfica, Feria de Exposición Académi
 | P5 | Animaciones y Cámara (Cinemachine) |
 # Runner3dUnity
 # Runner3dUnity
+=======
+**Hebert Suárez Burgos**  
+Universidad Autónoma Gabriel René Moreno (UAGRM)  
+Programación Gráfica — ELC102
+>>>>>>> eb81686ba21f4dee0076eafe1a076af0f67e195c

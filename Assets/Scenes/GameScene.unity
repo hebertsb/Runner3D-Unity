@@ -1530,6 +1530,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ObjectPooler
   prefabObstaculo: {fileID: 236026415684002238, guid: 4ff6f62c47d411e42bf32735141d145f, type: 3}
+  prefabMovil: {fileID: 1095886606712778506, guid: 3f14eef08558b8348ba09cb48d0d5527, type: 3}
   tamanoPool: 10
   distanciaSpawn: 30
   intervaloSpawn: 2
