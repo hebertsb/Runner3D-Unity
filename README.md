@@ -103,3 +103,4 @@ Proyecto universitario — Programación Gráfica, Feria de Exposición Académi
 | P3 | GameManager e Interfaces (UI, audio, estados) |
 | P4 | Arte 3D, Iluminación y VFX |
 | P5 | Animaciones y Cámara (Cinemachine) |
+# Runner3dUnity
