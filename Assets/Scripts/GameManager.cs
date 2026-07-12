@@ -17,6 +17,7 @@ public class GameManager : MonoBehaviour
     private const string CLAVE_RECORD = "Runner3D_Record";
     private const int COMBO_NIVEL2 = 5;
     private const int COMBO_NIVEL3 = 10;
+    private const int COMBO_NIVEL4 = 20;
 
     void Awake()
     {
@@ -49,6 +50,7 @@ public class GameManager : MonoBehaviour
 
     public float ComboMultiplicador()
     {
+        if (Combo >= COMBO_NIVEL4) return 4f;
         if (Combo >= COMBO_NIVEL3) return 3f;
         if (Combo >= COMBO_NIVEL2) return 2f;
         return 1f;

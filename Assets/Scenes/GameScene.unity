@@ -1018,10 +1018,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 12afa6f8b62833a41955d0ba148faeaf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AudioManager
+<<<<<<< HEAD
   musica: {fileID: 0}
   sonidoGameOver: {fileID: 0}
   sonidoSalto: {fileID: 0}
   sonidoEsquive: {fileID: 0}
+=======
+  musica: {fileID: 8300000, guid: e3a5bb2145262444c84eb8d452b8e303, type: 3}
+  sonidoGameOver: {fileID: 8300000, guid: 85eaa4f89a489594fa5875f3f6f7f3d6, type: 3}
+  sonidoSalto: {fileID: 8300000, guid: 0a4120ed011da9d47848d185bd0d1770, type: 3}
+  sonidoEsquive: {fileID: 8300000, guid: 7def56fb95473834b9ad4929403d69c2, type: 3}
+>>>>>>> d505a3f4827bdf43e8a71656be7f6c979681c597
 --- !u!4 &937640510
 Transform:
   m_ObjectHideFlags: 0
