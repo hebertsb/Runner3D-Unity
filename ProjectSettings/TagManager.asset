@@ -6,6 +6,8 @@ TagManager:
   tags:
   - Obstaculo
   - Scrolleable
+  - ObstaculoAereo
+  - ObstaculoNew
   layers:
   - Default
   - TransparentFX
