@@ -22,3 +22,11 @@
 *.VC.db
 .DS_Store
 Thumbs.db
+
+# Documentacion de estudio - solo local, no subir al repo
+docs/
+ESTUDIO_*.md
+GUIA_*.md
+RETO_EN_VIVO.md
+DOCUMENTACION.md
+run/
